@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
@@ -48,6 +49,10 @@ const rubricDescriptions: Record<string, Record<number, string>> = {
 };
 
 const Mentors = () => {
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
   const config = useHackathonConfig();
   const psNames = psNamesFromConfig(config.problemStatements);
   const [selectedMentor, setSelectedMentor] = useState<{ name: string; ps: number } | null>(null);
@@ -107,6 +112,30 @@ const Mentors = () => {
       setExistingScores((prev) => ({ ...prev, [scoringTeam.id]: true }));
     }
   };
+
+  const handleLogin = () => {
+    if (username === "protocol" && password === "protocol") {
+      setLoggedIn(true);
+      setLoginError("");
+    } else {
+      setLoginError("Invalid credentials");
+    }
+  };
+
+  if (!loggedIn) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="max-w-sm w-full p-6 space-y-4">
+          <h1 className="text-xl font-bold text-center">Mentor Login</h1>
+          <Input placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
+          <Input placeholder="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleLogin()} />
+          {loginError && <p className="text-sm text-destructive text-center">{loginError}</p>}
+          <Button className="w-full" onClick={handleLogin}>Login</Button>
+          <Link to="/" className="block text-center text-sm text-muted-foreground hover:text-foreground">← Back to form</Link>
+        </Card>
+      </div>
+    );
+  }
 
   if (config.loading) return <div className="min-h-screen flex items-center justify-center bg-background"><p className="text-muted-foreground">Loading...</p></div>;
 

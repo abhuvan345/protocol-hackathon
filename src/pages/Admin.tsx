@@ -23,7 +23,7 @@ const Admin = () => {
   const psNames = psNamesFromConfig(config.problemStatements);
 
   const handleLogin = () => {
-    if (username === "admin" && password === "admin") {
+    if (username === "protocol" && password === "protocol") {
       setLoggedIn(true);
       setError("");
     } else {
