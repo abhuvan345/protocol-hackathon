@@ -155,7 +155,7 @@ const Mentors = () => {
               <Card key={m.name} className="p-4 cursor-pointer hover:border-primary/30 hover:shadow-md transition-all border-2 border-transparent" onClick={() => setSelectedMentor(m)}>
                 <div className="flex items-center justify-between">
                   <span className="font-semibold">{m.name}</span>
-                  <span className="text-sm text-muted-foreground">PS {m.ps} — {psNames[m.ps]}</span>
+                  <span className="text-sm text-muted-foreground">PS {m.ps}</span>
                 </div>
               </Card>
             ))}
