@@ -49,6 +49,7 @@ const Index = () => {
     loading: configLoading,
   } = useHackathonConfig();
   const [teamName, setTeamName] = useState("");
+  const [teamCode, setTeamCode] = useState("");
   const [selectedPS, setSelectedPS] = useState<number | null>(null);
   const [counts, setCounts] = useState<Record<number, number>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -123,6 +124,10 @@ const Index = () => {
       toast.error("Please enter a team name");
       return;
     }
+    if (!teamCode.trim()) {
+      toast.error("Please enter your team ID");
+      return;
+    }
     if (!selectedPS) {
       toast.error("Please select a problem statement");
       return;
@@ -137,6 +142,7 @@ const Index = () => {
       .from("registrations")
       .insert({
         team_name: teamName.trim(),
+        team_code: teamCode.trim(),
         problem_statement: selectedPS,
       })
       .select("team_name, problem_statement, team_code")
@@ -231,6 +237,17 @@ const Index = () => {
             </p>
           </div>
 
+          <Link
+            to="/leaderboard"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg font-semibold text-white transition-all"
+            style={{
+              background: "linear-gradient(135deg, #e0436e, #c0305a)",
+              boxShadow: "0 4px 20px rgba(224,67,110,0.35)",
+            }}
+          >
+            <Trophy className="h-4 w-4" /> View Leaderboard
+          </Link>
+
           <p className="text-sm" style={{ color: "hsl(220,10%,50%)" }}>
             You have already registered. This device is locked to your
             registration.
@@ -264,7 +281,7 @@ const Index = () => {
               className="text-base sm:text-lg font-bold tracking-wide text-white cursor-default"
               onClick={handleHiddenAccess}
             >
-              PROTOCOL <span style={{ color: "#e0436e" }}>HACKATHON</span>
+              PROTOCOL | <span style={{ color: "#e0436e" }}>CODE LOCKED</span>
             </h1>
           </div>
           {/* Desktop nav */}
@@ -343,7 +360,7 @@ const Index = () => {
             className="text-xs sm:text-sm font-mono tracking-widest uppercase"
             style={{ color: "#e0436e" }}
           >
-            Protocol Hackathon 2026
+            Mega Hackathon 2026
           </p>
           <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-white">
             Choose Your <span style={{ color: "#e0436e" }}>Challenge</span>
@@ -357,34 +374,70 @@ const Index = () => {
           </p>
         </div>
 
-        {/* Team Name */}
-        <div className="max-w-md mx-auto">
-          <label
-            className="text-sm font-medium mb-2 block"
-            style={{ color: "hsl(220,10%,70%)" }}
-          >
-            Team Name
-          </label>
-          <input
-            placeholder="Enter your team name"
-            value={teamName}
-            onChange={(e) => setTeamName(e.target.value)}
-            className="w-full h-11 rounded-lg px-4 text-base outline-none transition-all"
-            style={{
-              background: "hsl(220,25%,13%)",
-              border: "1px solid hsl(220,15%,22%)",
-              color: "white",
-            }}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = "#e0436e";
-              e.currentTarget.style.boxShadow =
-                "0 0 0 3px rgba(224,67,110,0.15)";
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = "hsl(220,15%,22%)";
-              e.currentTarget.style.boxShadow = "none";
-            }}
-          />
+        {/* Team Details */}
+        <div className="max-w-2xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label
+              className="text-sm font-medium mb-2 block"
+              style={{ color: "hsl(220,10%,70%)" }}
+            >
+              Team Name
+            </label>
+            <input
+              placeholder="Enter your team name"
+              value={teamName}
+              onChange={(e) => setTeamName(e.target.value)}
+              className="w-full h-11 rounded-lg px-4 text-base outline-none transition-all"
+              style={{
+                background: "hsl(220,25%,13%)",
+                border: "1px solid hsl(220,15%,22%)",
+                color: "white",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "#e0436e";
+                e.currentTarget.style.boxShadow =
+                  "0 0 0 3px rgba(224,67,110,0.15)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "hsl(220,15%,22%)";
+                e.currentTarget.style.boxShadow = "none";
+              }}
+            />
+          </div>
+          <div>
+            <label
+              className="text-sm font-medium mb-2 block"
+              style={{ color: "hsl(220,10%,70%)" }}
+            >
+              Team ID
+              <span
+                className="ml-2 text-xs"
+                style={{ color: "hsl(220,10%,45%)" }}
+              >
+                (given by organiser, e.g. 01)
+              </span>
+            </label>
+            <input
+              placeholder="e.g. 01"
+              value={teamCode}
+              onChange={(e) => setTeamCode(e.target.value)}
+              className="w-full h-11 rounded-lg px-4 text-base outline-none transition-all font-mono"
+              style={{
+                background: "hsl(220,25%,13%)",
+                border: "1px solid hsl(220,15%,22%)",
+                color: "white",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "#e0436e";
+                e.currentTarget.style.boxShadow =
+                  "0 0 0 3px rgba(224,67,110,0.15)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "hsl(220,15%,22%)";
+                e.currentTarget.style.boxShadow = "none";
+              }}
+            />
+          </div>
         </div>
 
         {/* Problem Statement Cards */}
@@ -553,24 +606,38 @@ const Index = () => {
         {/* Submit */}
         <div className="text-center">
           <button
-            disabled={!teamName.trim() || !selectedPS || submitting}
+            disabled={
+              !teamName.trim() || !teamCode.trim() || !selectedPS || submitting
+            }
             onClick={handleSubmit}
             className="px-12 py-3 rounded-lg font-semibold text-white transition-all duration-200 text-base"
             style={{
               background:
-                !teamName.trim() || !selectedPS || submitting
+                !teamName.trim() ||
+                !teamCode.trim() ||
+                !selectedPS ||
+                submitting
                   ? "hsl(220,15%,20%)"
                   : "linear-gradient(135deg, #e0436e, #c0305a)",
               color:
-                !teamName.trim() || !selectedPS || submitting
+                !teamName.trim() ||
+                !teamCode.trim() ||
+                !selectedPS ||
+                submitting
                   ? "hsl(220,10%,40%)"
                   : "white",
               cursor:
-                !teamName.trim() || !selectedPS || submitting
+                !teamName.trim() ||
+                !teamCode.trim() ||
+                !selectedPS ||
+                submitting
                   ? "not-allowed"
                   : "pointer",
               boxShadow:
-                !teamName.trim() || !selectedPS || submitting
+                !teamName.trim() ||
+                !teamCode.trim() ||
+                !selectedPS ||
+                submitting
                   ? "none"
                   : "0 4px 20px rgba(224,67,110,0.4)",
             }}
