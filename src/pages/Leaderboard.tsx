@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
-import { useHackathonConfig, psNamesFromConfig } from "@/hooks/useHackathonConfig";
+import {
+  useHackathonConfig,
+  psNamesFromConfig,
+} from "@/hooks/useHackathonConfig";
 import { Trophy, Medal, Award } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -29,13 +32,20 @@ const Leaderboard = () => {
     const [regRes, msRes, cfgRes] = await Promise.all([
       supabase.from("registrations").select("*"),
       supabase.from("mentor_scores").select("*"),
-      supabase.from("hackathon_config").select("key, value").eq("key", "leaderboard_live").single(),
+      supabase
+        .from("hackathon_config")
+        .select("key, value")
+        .eq("key", "leaderboard_live")
+        .single(),
     ]);
 
     const live = cfgRes.data?.value === true;
     setIsLive(live);
 
-    if (!live) { setLoading(false); return; }
+    if (!live) {
+      setLoading(false);
+      return;
+    }
 
     const regs = regRes.data || [];
     const scores = msRes.data || [];
@@ -43,7 +53,8 @@ const Leaderboard = () => {
     // Calculate mentor avg per team, normalized to 25
     const mentorByTeam: Record<string, { total: number; count: number }> = {};
     scores.forEach((s: any) => {
-      if (!mentorByTeam[s.team_id]) mentorByTeam[s.team_id] = { total: 0, count: 0 };
+      if (!mentorByTeam[s.team_id])
+        mentorByTeam[s.team_id] = { total: 0, count: 0 };
       mentorByTeam[s.team_id].total += s.total;
       mentorByTeam[s.team_id].count++;
     });
@@ -51,7 +62,12 @@ const Leaderboard = () => {
     const teamScores: TeamScore[] = regs.map((r: any) => {
       const m = mentorByTeam[r.id];
       const mentorAvg25 = m ? (m.total / m.count / 30) * 25 : 0;
-      return { id: r.id, team_name: r.team_name, problem_statement: r.problem_statement, mentorAvg25 };
+      return {
+        id: r.id,
+        team_name: r.team_name,
+        problem_statement: r.problem_statement,
+        mentorAvg25,
+      };
     });
 
     teamScores.sort((a, b) => b.mentorAvg25 - a.mentorAvg25);
@@ -73,8 +89,12 @@ const Leaderboard = () => {
         <Card className="max-w-md w-full p-8 text-center space-y-4">
           <Trophy className="mx-auto h-16 w-16 text-muted-foreground" />
           <h1 className="text-2xl font-bold">Leaderboard Not Available</h1>
-          <p className="text-muted-foreground">The leaderboard will be visible once the admin makes it live.</p>
-          <Link to="/"><Button variant="outline">← Back to Home</Button></Link>
+          <p className="text-muted-foreground">
+            The leaderboard will be visible once the admin makes it live.
+          </p>
+          <Link to="/">
+            <Button variant="outline">← Back to Home</Button>
+          </Link>
         </Card>
       </div>
     );
@@ -90,11 +110,15 @@ const Leaderboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold flex items-center gap-2">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-2">
+          <h1 className="text-lg sm:text-xl font-bold flex items-center gap-2 min-w-0">
             <Trophy className="h-5 w-5 text-primary" /> Leaderboard
           </h1>
-          <Link to="/"><Button variant="ghost" size="sm">← Back</Button></Link>
+          <Link to="/">
+            <Button variant="ghost" size="sm" className="shrink-0">
+              ← Back
+            </Button>
+          </Link>
         </div>
       </header>
 
@@ -109,15 +133,21 @@ const Leaderboard = () => {
           return (
             <Card
               key={t.id}
-              className={`p-4 flex items-center gap-4 transition-all ${
+              className={`p-4 flex items-start sm:items-center gap-3 sm:gap-4 transition-all ${
                 isTop9
                   ? "border-2 border-primary/40 bg-primary/5 shadow-md"
                   : "border border-border"
               }`}
             >
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
-                rank <= 3 ? "bg-primary text-primary-foreground" : isTop9 ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground"
-              }`}>
+              <div
+                className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
+                  rank <= 3
+                    ? "bg-primary text-primary-foreground"
+                    : isTop9
+                      ? "bg-accent text-accent-foreground"
+                      : "bg-muted text-muted-foreground"
+                }`}
+              >
                 {rank}
               </div>
 
@@ -126,16 +156,21 @@ const Leaderboard = () => {
                   <span className="font-semibold truncate">{t.team_name}</span>
                   {getRankIcon(rank)}
                   {isTop9 && rank > 3 && (
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">Top 9</span>
+                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+                      Top 9
+                    </span>
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  PS {t.problem_statement} — {psNames[t.problem_statement] || ""}
+                  PS {t.problem_statement} —{" "}
+                  {psNames[t.problem_statement] || ""}
                 </p>
               </div>
 
-              <div className="text-right shrink-0">
-                <span className="text-lg font-bold text-primary">{t.mentorAvg25.toFixed(1)}</span>
+              <div className="text-right shrink-0 pt-0.5">
+                <span className="text-lg font-bold text-primary">
+                  {t.mentorAvg25.toFixed(1)}
+                </span>
                 <span className="text-xs text-muted-foreground">/25</span>
               </div>
             </Card>
@@ -143,7 +178,9 @@ const Leaderboard = () => {
         })}
 
         {teams.length === 0 && (
-          <p className="text-center text-muted-foreground py-12">No scores available yet.</p>
+          <p className="text-center text-muted-foreground py-12">
+            No scores available yet.
+          </p>
         )}
       </main>
     </div>

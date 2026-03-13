@@ -8,6 +8,7 @@ import Admin from "./pages/Admin";
 import Mentors from "./pages/Mentors";
 import Judges from "./pages/Judges";
 import Leaderboard from "./pages/Leaderboard";
+import AccessHub from "./pages/AccessHub";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/admin" element={<Admin />} />
           <Route path="/mentors" element={<Mentors />} />
           <Route path="/judges" element={<Judges />} />
+          <Route path="/access" element={<AccessHub />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

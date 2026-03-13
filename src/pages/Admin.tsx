@@ -4,8 +4,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Users, RefreshCw, Settings, Globe, WifiOff } from "lucide-react";
-import { useHackathonConfig, psNamesFromConfig } from "@/hooks/useHackathonConfig";
+import {
+  ArrowLeft,
+  Users,
+  RefreshCw,
+  Settings,
+  Globe,
+  WifiOff,
+} from "lucide-react";
+import {
+  useHackathonConfig,
+  psNamesFromConfig,
+} from "@/hooks/useHackathonConfig";
 import AdminSettings from "@/components/AdminSettings";
 import { toast } from "sonner";
 
@@ -18,7 +28,9 @@ const Admin = () => {
   const [mentorScores, setMentorScores] = useState<any[]>([]);
   const [judgeScores, setJudgeScores] = useState<any[]>([]);
   const [filter, setFilter] = useState<number | null>(null);
-  const [tab, setTab] = useState<"registrations" | "scores" | "settings">("registrations");
+  const [tab, setTab] = useState<"registrations" | "scores" | "settings">(
+    "registrations",
+  );
   const config = useHackathonConfig();
   const psNames = psNamesFromConfig(config.problemStatements);
 
@@ -37,7 +49,10 @@ const Admin = () => {
 
   const fetchAll = async () => {
     const [r, ms, js] = await Promise.all([
-      supabase.from("registrations").select("*").order("created_at", { ascending: true }),
+      supabase
+        .from("registrations")
+        .select("*")
+        .order("created_at", { ascending: true }),
       supabase.from("mentor_scores").select("*"),
       supabase.from("judge_scores").select("*"),
     ]);
@@ -51,38 +66,74 @@ const Admin = () => {
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="max-w-sm w-full p-6 space-y-4">
           <h1 className="text-xl font-bold text-center">Admin Login</h1>
-          <Input placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
-          <Input placeholder="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleLogin()} />
-          {error && <p className="text-sm text-destructive text-center">{error}</p>}
-          <Button className="w-full" onClick={handleLogin}>Login</Button>
-          <Link to="/" className="block text-center text-sm text-muted-foreground hover:text-foreground">← Back to form</Link>
+          <Input
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          <Input
+            placeholder="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+          />
+          {error && (
+            <p className="text-sm text-destructive text-center">{error}</p>
+          )}
+          <Button className="w-full" onClick={handleLogin}>
+            Login
+          </Button>
+          <Link
+            to="/"
+            className="block text-center text-sm text-muted-foreground hover:text-foreground"
+          >
+            ← Back to form
+          </Link>
         </Card>
       </div>
     );
   }
 
-  const filtered = filter ? registrations.filter((r) => r.problem_statement === filter) : registrations;
+  const filtered = filter
+    ? registrations.filter((r) => r.problem_statement === filter)
+    : registrations;
   const counts: Record<number, number> = {};
-  config.problemStatements.forEach((p) => { counts[p.id] = 0; });
-  registrations.forEach((r) => { counts[r.problem_statement] = (counts[r.problem_statement] || 0) + 1; });
+  config.problemStatements.forEach((p) => {
+    counts[p.id] = 0;
+  });
+  registrations.forEach((r) => {
+    counts[r.problem_statement] = (counts[r.problem_statement] || 0) + 1;
+  });
 
   // Mentor averages
-  const mentorAvgByTeam: Record<string, { avg: number; count: number; mentors: any[] }> = {};
+  const mentorAvgByTeam: Record<
+    string,
+    { avg: number; count: number; mentors: any[] }
+  > = {};
   mentorScores.forEach((ms) => {
-    if (!mentorAvgByTeam[ms.team_id]) mentorAvgByTeam[ms.team_id] = { avg: 0, count: 0, mentors: [] };
+    if (!mentorAvgByTeam[ms.team_id])
+      mentorAvgByTeam[ms.team_id] = { avg: 0, count: 0, mentors: [] };
     mentorAvgByTeam[ms.team_id].count++;
     mentorAvgByTeam[ms.team_id].mentors.push(ms);
   });
   Object.keys(mentorAvgByTeam).forEach((tid) => {
     const entry = mentorAvgByTeam[tid];
-    const totalSum = entry.mentors.reduce((s: number, m: any) => s + m.total, 0);
+    const totalSum = entry.mentors.reduce(
+      (s: number, m: any) => s + m.total,
+      0,
+    );
     entry.avg = (totalSum / entry.count / 30) * 25;
   });
 
   // Judge totals
-  const judgeTotalByTeam: Record<string, { total: number; count: number; judges: any[] }> = {};
+  const judgeTotalByTeam: Record<
+    string,
+    { total: number; count: number; judges: any[] }
+  > = {};
   judgeScores.forEach((js) => {
-    if (!judgeTotalByTeam[js.team_id]) judgeTotalByTeam[js.team_id] = { total: 0, count: 0, judges: [] };
+    if (!judgeTotalByTeam[js.team_id])
+      judgeTotalByTeam[js.team_id] = { total: 0, count: 0, judges: [] };
     judgeTotalByTeam[js.team_id].total += js.total;
     judgeTotalByTeam[js.team_id].count++;
     judgeTotalByTeam[js.team_id].judges.push(js);
@@ -91,31 +142,67 @@ const Admin = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link to="/"><Button variant="ghost" size="icon"><ArrowLeft className="h-4 w-4" /></Button></Link>
-            <h1 className="text-xl font-bold">Admin Dashboard</h1>
+        <div className="container mx-auto px-4 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link to="/">
+              <Button variant="ghost" size="icon">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </Link>
+            <h1 className="text-lg sm:text-xl font-bold">Admin Dashboard</h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant={config.leaderboardLive ? "destructive" : "default"}
               size="sm"
+              className="w-full sm:w-auto"
               onClick={async () => {
                 const newVal = !config.leaderboardLive;
                 const { error } = await supabase
                   .from("hackathon_config")
-                  .update({ value: newVal, updated_at: new Date().toISOString() } as any)
+                  .update({
+                    value: newVal,
+                    updated_at: new Date().toISOString(),
+                  } as any)
                   .eq("key", "leaderboard_live");
-                if (error) { toast.error("Failed to toggle"); return; }
-                toast.success(newVal ? "Leaderboard is now LIVE!" : "Leaderboard is now offline");
+                if (error) {
+                  toast.error("Failed to toggle");
+                  return;
+                }
+                toast.success(
+                  newVal
+                    ? "Leaderboard is now LIVE!"
+                    : "Leaderboard is now offline",
+                );
                 config.refetch();
               }}
             >
-              {config.leaderboardLive ? <WifiOff className="h-4 w-4 mr-1" /> : <Globe className="h-4 w-4 mr-1" />}
+              {config.leaderboardLive ? (
+                <WifiOff className="h-4 w-4 mr-1" />
+              ) : (
+                <Globe className="h-4 w-4 mr-1" />
+              )}
               {config.leaderboardLive ? "Go Offline" : "Go Online"}
             </Button>
-            <Button variant="outline" size="sm" onClick={() => { fetchAll(); config.refetch(); }}><RefreshCw className="h-4 w-4 mr-1" /> Refresh</Button>
-            <Button variant="outline" size="sm" onClick={() => setLoggedIn(false)}>Logout</Button>
+            <Button
+              className="w-full sm:w-auto"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                fetchAll();
+                config.refetch();
+              }}
+            >
+              <RefreshCw className="h-4 w-4 mr-1" /> Refresh
+            </Button>
+            <Button
+              className="w-full sm:w-auto"
+              variant="outline"
+              size="sm"
+              onClick={() => setLoggedIn(false)}
+            >
+              Logout
+            </Button>
           </div>
         </div>
       </header>
@@ -144,10 +231,29 @@ const Admin = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2">
-          <Button variant={tab === "registrations" ? "default" : "outline"} size="sm" onClick={() => setTab("registrations")}>Registrations</Button>
-          <Button variant={tab === "scores" ? "default" : "outline"} size="sm" onClick={() => setTab("scores")}>All Scores</Button>
-          <Button variant={tab === "settings" ? "default" : "outline"} size="sm" onClick={() => setTab("settings")}>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            className="w-full sm:w-auto"
+            variant={tab === "registrations" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setTab("registrations")}
+          >
+            Registrations
+          </Button>
+          <Button
+            className="w-full sm:w-auto"
+            variant={tab === "scores" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setTab("scores")}
+          >
+            All Scores
+          </Button>
+          <Button
+            className="w-full sm:w-auto"
+            variant={tab === "settings" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setTab("settings")}
+          >
             <Settings className="h-4 w-4 mr-1" /> Settings
           </Button>
         </div>
@@ -166,14 +272,26 @@ const Admin = () => {
                 </thead>
                 <tbody>
                   {filtered.length === 0 ? (
-                    <tr><td colSpan={4} className="p-8 text-center text-muted-foreground">No registrations yet</td></tr>
+                    <tr>
+                      <td
+                        colSpan={4}
+                        className="p-8 text-center text-muted-foreground"
+                      >
+                        No registrations yet
+                      </td>
+                    </tr>
                   ) : (
                     filtered.map((r, i) => (
-                      <tr key={r.id} className="border-b border-border last:border-0 hover:bg-muted/30">
+                      <tr
+                        key={r.id}
+                        className="border-b border-border last:border-0 hover:bg-muted/30"
+                      >
                         <td className="p-3 text-muted-foreground">{i + 1}</td>
                         <td className="p-3 font-medium">{r.team_name}</td>
                         <td className="p-3">PS {r.problem_statement}</td>
-                        <td className="p-3 text-muted-foreground">{new Date(r.created_at).toLocaleString()}</td>
+                        <td className="p-3 text-muted-foreground">
+                          {new Date(r.created_at).toLocaleString()}
+                        </td>
                       </tr>
                     ))
                   )}
@@ -192,16 +310,31 @@ const Admin = () => {
                     <th className="text-left p-3 font-medium">#</th>
                     <th className="text-left p-3 font-medium">Team</th>
                     <th className="text-left p-3 font-medium">PS</th>
-                    <th className="text-left p-3 font-medium">Mentor Avg (/25)</th>
-                    <th className="text-left p-3 font-medium">Mentor Details</th>
-                    <th className="text-left p-3 font-medium">Judge Total (/75)</th>
+                    <th className="text-left p-3 font-medium">
+                      Mentor Avg (/25)
+                    </th>
+                    <th className="text-left p-3 font-medium">
+                      Mentor Details
+                    </th>
+                    <th className="text-left p-3 font-medium">
+                      Judge Total (/75)
+                    </th>
                     <th className="text-left p-3 font-medium">Judge Details</th>
-                    <th className="text-left p-3 font-medium">Grand Total (/100)</th>
+                    <th className="text-left p-3 font-medium">
+                      Grand Total (/100)
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.length === 0 ? (
-                    <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">No teams</td></tr>
+                    <tr>
+                      <td
+                        colSpan={8}
+                        className="p-8 text-center text-muted-foreground"
+                      >
+                        No teams
+                      </td>
+                    </tr>
                   ) : (
                     filtered.map((r, i) => {
                       const ma = mentorAvgByTeam[r.id];
@@ -210,19 +343,42 @@ const Admin = () => {
                       const judgeVal = jt ? jt.total : 0;
                       const grand = mentorVal + judgeVal;
                       return (
-                        <tr key={r.id} className="border-b border-border last:border-0 hover:bg-muted/30">
+                        <tr
+                          key={r.id}
+                          className="border-b border-border last:border-0 hover:bg-muted/30"
+                        >
                           <td className="p-3 text-muted-foreground">{i + 1}</td>
                           <td className="p-3 font-medium">{r.team_name}</td>
                           <td className="p-3">PS {r.problem_statement}</td>
-                          <td className="p-3 font-semibold">{ma ? ma.avg.toFixed(1) : "—"}</td>
-                          <td className="p-3 text-xs text-muted-foreground">
-                            {ma ? ma.mentors.map((m: any) => `${m.mentor_name}: ${m.total}/30`).join(", ") : "—"}
+                          <td className="p-3 font-semibold">
+                            {ma ? ma.avg.toFixed(1) : "—"}
                           </td>
-                          <td className="p-3 font-semibold">{jt ? jt.total : "—"}</td>
                           <td className="p-3 text-xs text-muted-foreground">
-                            {jt ? jt.judges.map((j: any) => `${j.judge_name}: ${j.total}/25`).join(", ") : "—"}
+                            {ma
+                              ? ma.mentors
+                                  .map(
+                                    (m: any) =>
+                                      `${m.mentor_name}: ${m.total}/30`,
+                                  )
+                                  .join(", ")
+                              : "—"}
                           </td>
-                          <td className="p-3 font-bold text-primary">{(ma || jt) ? grand.toFixed(1) : "—"}</td>
+                          <td className="p-3 font-semibold">
+                            {jt ? jt.total : "—"}
+                          </td>
+                          <td className="p-3 text-xs text-muted-foreground">
+                            {jt
+                              ? jt.judges
+                                  .map(
+                                    (j: any) =>
+                                      `${j.judge_name}: ${j.total}/25`,
+                                  )
+                                  .join(", ")
+                              : "—"}
+                          </td>
+                          <td className="p-3 font-bold text-primary">
+                            {ma || jt ? grand.toFixed(1) : "—"}
+                          </td>
                         </tr>
                       );
                     })
@@ -243,7 +399,9 @@ const Admin = () => {
           />
         )}
 
-        <p className="text-center text-sm text-muted-foreground">Total registrations: {registrations.length}</p>
+        <p className="text-center text-sm text-muted-foreground">
+          Total registrations: {registrations.length}
+        </p>
       </main>
     </div>
   );
